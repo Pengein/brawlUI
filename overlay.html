@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Brawl Stars Overlay - Final 2026</title>
+    <style>
+        @font-face {
+            font-family: 'KoBrawlGothic';
+            src: url('KoBrawl Gothic40.otf');
+            font-display: swap;
+        }
+
+        :root {
+            --border-color: #000;
+            --border-width: 5px;
+            --team-width: 280px;
+            --score-width: 60px;
+            --total-width: calc(var(--team-width) + var(--score-width) + (var(--border-width) * 2));
+            --ban-width: 200px;
+            --set-width: calc(var(--total-width) - var(--ban-width) + var(--border-width));
+            --blue-main: #3b82f6;
+            --blue-dark: #2563eb;
+            --red-main: #ef4444;
+            --red-dark: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'KoBrawlGothic', sans-serif;
+            background-color: #00FF00;
+            overflow: hidden;
+        }
+
+        .main-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 140px;
+            margin-top: 30px;
+            transform: scale(1.2);
+            /* 1.3배 확대 (원하는 만큼 숫자 조절) */
+            transform-origin: top center;
+            /* 상단 중앙을 기준으로 확대 */
+        }
+
+        .team-box {
+            display: flex;
+            flex-direction: column;
+            width: var(--total-width);
+        }
+
+        .top-row {
+            display: flex;
+            height: 60px;
+            border: var(--border-width) solid var(--border-color);
+            background: #f3f4f6;
+            z-index: 10;
+            align-items: center;
+            width: 100%;
+            line-height: 1;
+        }
+
+        .team-name {
+            flex: 1;
+            padding: 0 15px;
+            font-size: 24px;
+            white-space: nowrap;
+            overflow: hidden;
+            padding-top: 6px;
+        }
+
+        .left-team .team-name {
+            text-align: right;
+        }
+
+        .right-team .team-name {
+            text-align: left;
+        }
+
+        .score {
+            width: var(--score-width);
+            height: 100%;
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 4px;
+        }
+
+        .left-team .score {
+            border-left: var(--border-width) solid var(--border-color);
+            background: var(--blue-main);
+        }
+
+        .right-team .score {
+            border-right: var(--border-width) solid var(--border-color);
+            background: var(--red-main);
+            order: -1;
+        }
+
+        .bottom-container {
+            display: flex;
+            margin-top: calc(var(--border-width) * -1);
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .group {
+            display: flex;
+            border: var(--border-width) solid var(--border-color);
+            background: var(--border-color);
+            gap: var(--border-width);
+        }
+
+        .ban-group {
+            height: 40px;
+            width: var(--ban-width);
+            z-index: 5;
+        }
+
+        .set-group {
+            height: 25px;
+            width: var(--set-width);
+            z-index: 4;
+        }
+
+        .left-team .set-group {
+            margin-left: calc(var(--border-width) * -1);
+        }
+
+        .right-team .ban-group {
+            margin-left: calc(var(--border-width) * -1);
+        }
+
+        .cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #2d2d2d;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .left-team .ban-group {
+            flex-direction: row-reverse;
+        }
+
+        .ban-cell::before {
+            content: 'BAN';
+            position: absolute;
+            font-size: 12px;
+            font-weight: 900;
+            color: rgba(239, 68, 68, 0.85);
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            padding-top: 3px;
+            pointer-events: none;
+        }
+
+        .cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 5;
+            position: relative;
+            filter: grayscale(1);
+        }
+
+        .set-cell {
+            background: #fff;
+        }
+
+        .left-team .set-cell.win {
+            background: var(--blue-dark);
+        }
+
+        .right-team .set-cell.win {
+            background: var(--red-dark);
+        }
+
+        #r-ban1 img,
+        #r-ban2 img,
+        #r-ban3 img {
+            transform: scaleX(-1);
+            filter: grayscale(100%);
+            /* 밴 느낌을 강조하기 위해 회색조 추가 (선택사항) */
+        }
+
+        /* 블루팀은 정방향, 회색조만 추가 (선택사항) */
+        #b-ban1 img,
+        #b-ban2 img,
+        #b-ban3 img {
+            filter: grayscale(100%);
+        }
+
+        /* 밴 슬롯 공통 애니메이션 (마주보는 느낌 극대화) */
+        .ban-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-wrapper">
+        <div class="team-box left-team">
+            <div class="top-row">
+                <div class="team-name" id="b-name">BLUE TEAM</div>
+                <div class="score" id="b-score">0</div>
+            </div>
+            <div class="bottom-container">
+                <div class="group ban-group">
+                    <div class="cell ban-cell" id="b-ban1"></div>
+                    <div class="cell ban-cell" id="b-ban2"></div>
+                    <div class="cell ban-cell" id="b-ban3"></div>
+                </div>
+                <div class="group set-group">
+                    <div class="cell set-cell" id="b-set2"></div>
+                    <div class="cell set-cell" id="b-set1"></div>
+                </div>
+            </div>
+        </div>
+        <div class="team-box right-team">
+            <div class="top-row">
+                <div class="score" id="r-score">0</div>
+                <div class="team-name" id="r-name">RED TEAM</div>
+            </div>
+            <div class="bottom-container">
+                <div class="group set-group">
+                    <div class="cell set-cell" id="r-set1"></div>
+                    <div class="cell set-cell" id="r-set2"></div>
+                </div>
+                <div class="group ban-group">
+                    <div class="cell ban-cell" id="r-ban1"></div>
+                    <div class="cell ban-cell" id="r-ban2"></div>
+                    <div class="cell ban-cell" id="r-ban3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nameMap = {
+            "볼트": "bolt", "스타노바": "starnova", "데미안": "damian", "나지아": "najia", "시리우스": "sirius", "글로이": "glowy", "피어스": "pierce", "지지": "gigi", "지기": "ziggy", "미나": "mina", "트렁크": "trunk", "알리": "alli", "카제": "kaze", "재용": "jae-yong", "루미": "lumi", "핑크스": "finx", "올리": "ollie", "미플": "meeple", "버즈라이트이어": "buzz_lightyear", "셰이드": "shade",
+            "쥬쥬": "juju", "켄지": "kenji", "모": "moe", "클랜시": "clancy", "베리": "berry", "드라코": "draco", "릴리": "lily", "멜로디": "melodie", "래리&로리": "larry-lawrie", "키트": "kit", "미코": "mico", "찰리": "charlie", "펄": "pearl", "더그": "doug", "코드리우스": "cordelius", "메이지": "maisie", "알티": "r-t", "맨디": "mandy", "버스터": "buster", "샘": "sam", "오티스": "otis", "자넷": "janet", "이브": "eve", "팽": "fang", "롤라": "lola", "애쉬": "ash", "버즈": "buzz", "벨": "belle", "러프스": "ruffs", "루": "lou", "콜레트": "colette", "서지": "surge", "게일": "gale", "메구": "meg", "앰버": "amber", "샌디": "sandy", "레온": "leon", "크로우": "crow", "스파이크": "spike", "스퀴크": "squeak", "바이런": "byron", "스프라우트": "sprout", "미스터P": "mr-p", "맥스": "max", "진": "gene", "타라": "tara", "모티스": "mortis", "그리프": "griff", "에드거": "edgar", "나니": "nani", "비": "bea", "비비": "bibi", "프랭크": "frank", "팜": "pam", "파이퍼": "piper", "스튜": "stu", "엠즈": "emz", "8비트": "8-bit", "틱": "tick", "다이너마이크": "dynamike", "제시": "jessie", "로사": "rosa", "포코": "poco", "엘프리모": "el-primo", "대릴": "darryl", "페니": "penny", "리코": "rico", "잭키": "jacky", "가스": "gus", "보니": "bonnie", "니타": "nita", "콜트": "colt", "쉘리": "shelly"
+        };
+
+        function sync() {
+            const keys = ['b-name', 'b-score', 'r-name', 'r-score', 'b-ban1', 'b-ban2', 'b-ban3', 'r-ban1', 'r-ban2', 'r-ban3', 'b-set1', 'b-set2', 'r-set1', 'r-set2'];
+            keys.forEach(k => {
+                const val = localStorage.getItem(k);
+                const el = document.getElementById(k);
+                if (!el) return;
+
+                if (k.includes('ban')) {
+                    if (val && nameMap[val]) {
+                        const imgSrc = `images/${nameMap[val]}_portrait.png`;
+                        if (!el.querySelector('img') || el.querySelector('img').src.indexOf(imgSrc) === -1) {
+                            el.innerHTML = `<img src="${imgSrc}">`;
+                        }
+                    } else {
+                        el.innerHTML = '';
+                    }
+                } else if (k.includes('set')) {
+                    el.className = val === 'true' ? 'cell set-cell win' : 'cell set-cell';
+                } else {
+                    // 값이 있을 때만 업데이트하여 불필요한 깜빡임 방지
+                    if (val !== null) {
+                        el.innerText = val;
+                    }
+                }
+            });
+        }
+        setInterval(sync, 100);
+    </script>
+</body>
+
+</html>

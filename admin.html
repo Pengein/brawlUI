@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Brawl Stars Admin - Balanced View</title>
+    <style>
+        /* 전체적인 폰트와 패딩을 살짝 키워 가독성 향상 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin: 0 0 12px 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        /* 브롤러 선택 섹션 사이즈 밸런스 조정 */
+        .picker-panel {
+            max-width: 750px;
+            margin: 20px auto 0;
+        }
+
+        .search-container {
+            margin: 10px 0;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .brawler-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            /* 5열에서 6열로 변경하여 가로 효율 상승 */
+            gap: 8px;
+            margin-top: 10px;
+            height: 300px;
+            /* 높이를 조금 더 확보하여 스크롤 압박 감소 */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+
+        .brawler-item {
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: all 0.2s;
+            position: relative;
+            background: #fff;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brawler-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+        }
+
+        /* 이미지와 이름의 비율 최적화 */
+        .brawler-item img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+
+        .brawler-item span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            padding: 3px 0;
+            border-radius: 0 0 5px 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        /* 밴 슬롯 크기 살짝 확대 */
+        .ban-slots {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .slot {
+            width: 65px;
+            height: 65px;
+            background: #f8f8f8;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #999;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .slot:hover {
+            border-color: #3b82f6;
+            background: #eef2ff;
+        }
+
+        .slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .active-slot {
+            border-color: #ef4444 !important;
+            background: #fff1f2 !important;
+            border-style: solid;
+            color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
+        .set-control {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #f9f9f9;
+        }
+
+        button.active-win {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        button.active-win-red {
+            background: #ef4444;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .clear-btn {
+            background: #333;
+            color: white;
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .clear-btn:hover {
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="panel" style="max-width: 1100px; margin: 0 auto 20px; border: 2px solid #3b82f6; background: #eef2ff;">
+        <h3 style="margin-top:0; color: #2563eb;">📡 OBS 오버레이 연결 정보</h3>
+        <p style="margin-bottom: 8px; font-size: 0.9rem;">아래 주소를 복사하여 OBS 브라우저 소스 URL에 넣으세요:</p>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="obs-link" readonly
+                style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; background: #fff;">
+            <button onclick="copyOBSLink()" style="flex: 0 0 100px; background: #3b82f6; color: white; border: none;">주소
+                복사</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 8px;">※ 반드시 관리자 페이지와 <b>같은 사이트 주소</b>의 오버레이를 사용해야 데이터가
+            연동됩니다.</p>
+    </div>
+    <div class="admin-grid">
+        <!-- BLUE TEAM -->
+        <div class="panel">
+            <h2>BLUE TEAM</h2>
+            <div class="input-group"><label>팀 이름</label><input type="text" id="b-name-in" placeholder="팀명 입력"
+                    oninput="save('b-name', this.value)"></div>
+            <div class="input-group"><label>점수</label><input type="number" id="b-score-in" value="0"
+                    oninput="save('b-score', this.value)"></div>
+            <label>BAN 슬롯 선택</label>
+            <div class="ban-slots">
+                <div id="slot-b-ban1" class="slot" onclick="selectSlot('b-ban1')">1</div>
+                <div id="slot-b-ban2" class="slot" onclick="selectSlot('b-ban2')">2</div>
+                <div id="slot-b-ban3" class="slot" onclick="selectSlot('b-ban3')">3</div>
+            </div>
+            <div class="set-control">
+                <button id="btn-b-set1" onclick="toggleSet('b-set1')">SET 1 WIN</button>
+                <button id="btn-b-set2" onclick="toggleSet('b-set2')">SET 2 WIN</button>
+            </div>
+        </div>
+
+        <!-- RED TEAM -->
+        <div class="panel">
+            <h2>RED TEAM</h2>
+            <div class="input-group"><label>팀 이름</label><input type="text" id="r-name-in" placeholder="팀명 입력"
+                    oninput="save('r-name', this.value)"></div>
+            <div class="input-group"><label>점수</label><input type="number" id="r-score-in" value="0"
+                    oninput="save('r-score', this.value)"></div>
+            <label>BAN 슬롯 선택</label>
+            <div class="ban-slots">
+                <div id="slot-r-ban1" class="slot" onclick="selectSlot('r-ban1')">1</div>
+                <div id="slot-r-ban2" class="slot" onclick="selectSlot('r-ban2')">2</div>
+                <div id="slot-r-ban3" class="slot" onclick="selectSlot('r-ban3')">3</div>
+            </div>
+            <div class="set-control">
+                <button id="btn-r-set1" onclick="toggleSet('r-set1')">SET 1 WIN</button>
+                <button id="btn-r-set2" onclick="toggleSet('r-set2')">SET 2 WIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 브롤러 선택 영역 -->
+    <div class="panel picker-panel">
+        <h3>브롤러 선택 창</h3>
+        <div class="search-container">
+            <input type="text" id="brawlerSearch" class="search-input" placeholder="브롤러 이름을 입력하세요..."
+                onkeyup="filterBrawlers()">
+        </div>
+        <div class="brawler-picker" id="picker"></div>
+        <button class="clear-btn" onclick="confirmClear()">선택한 슬롯 데이터 비우기</button>
+    </div>
+
+    <script>
+        const nameMap = {
+            "볼트": "bolt", "스타노바": "starnova", "데미안": "damian", "나지아": "najia", "시리우스": "sirius", "글로이": "glowy", "피어스": "pierce", "지지": "gigi", "지기": "ziggy", "미나": "mina", "트렁크": "trunk", "알리": "alli", "카제": "kaze", "재용": "jae-yong", "루미": "lumi", "핑크스": "finx", "올리": "ollie", "미플": "meeple", "버즈라이트이어": "buzz_lightyear", "셰이드": "shade",
+            "쥬쥬": "juju", "켄지": "kenji", "모": "moe", "클랜시": "clancy", "베리": "berry", "드라코": "draco", "릴리": "lily", "멜로디": "melodie", "래리&로리": "larry-lawrie", "키트": "kit", "미코": "mico", "찰리": "charlie", "펄": "pearl", "더그": "doug", "코드리우스": "cordelius", "메이지": "maisie", "알티": "r-t", "맨디": "mandy", "버스터": "buster", "샘": "sam", "오티스": "otis", "자넷": "janet", "이브": "eve", "팽": "fang", "롤라": "lola", "애쉬": "ash", "버즈": "buzz", "벨": "belle", "러프스": "ruffs", "루": "lou", "콜레트": "colette", "서지": "surge", "게일": "gale", "메구": "meg", "앰버": "amber", "샌디": "sandy", "레온": "leon", "크로우": "crow", "스파이크": "spike", "스퀴크": "squeak", "바이런": "byron", "스프라우트": "sprout", "미스터P": "mr-p", "맥스": "max", "진": "gene", "타라": "tara", "모티스": "mortis", "그리프": "griff", "에드거": "edgar", "나니": "nani", "비": "bea", "비비": "bibi", "프랭크": "frank", "팜": "pam", "파이퍼": "piper", "스튜": "stu", "엠즈": "emz", "8비트": "8-bit", "틱": "tick", "다이너마이크": "dynamike", "제시": "jessie", "로사": "rosa", "포코": "poco", "엘프리모": "el-primo", "대릴": "darryl", "페니": "penny", "리코": "rico", "잭키": "jacky", "가스": "gus", "보니": "bonnie", "니타": "nita", "콜트": "colt", "쉘리": "shelly"
+        };
+
+        let currentSlotKey = null;
+
+        function initPicker() {
+            const picker = document.getElementById('picker');
+            picker.innerHTML = '';
+            Object.keys(nameMap).sort().forEach(koName => { // 가나다순 정렬 추가
+                const div = document.createElement('div');
+                div.className = 'brawler-item';
+                div.setAttribute('data-name', koName);
+                div.innerHTML = `<img src="images/${nameMap[koName]}_portrait.png"><span>${koName}</span>`;
+                div.onclick = () => pickBrawler(koName);
+                picker.appendChild(div);
+            });
+        }
+
+        function getChosung(str) {
+            const cho = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+            let result = "";
+            for (let i = 0; i < str.length; i++) {
+                let code = str.charCodeAt(i) - 44032;
+                if (code > -1 && code < 11172) result += cho[Math.floor(code / 588)];
+                else result += str.charAt(i);
+            }
+            return result;
+        }
+
+        function filterBrawlers() {
+            const input = document.getElementById('brawlerSearch').value.toLowerCase();
+            const inputCho = getChosung(input); // 입력값의 초성
+            const items = document.querySelectorAll('.brawler-item');
+
+            items.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                const nameCho = getChosung(name); // 브롤러 이름의 초성
+
+                // 일반 포함 검색 OR 초성 검색 둘 다 지원
+                if (name.includes(input) || nameCho.includes(inputCho)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function selectSlot(id) {
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-slot'));
+            currentSlotKey = id;
+            document.getElementById('slot-' + id).classList.add('active-slot');
+        }
+
+        function pickBrawler(koName) {
+            if (!currentSlotKey) return alert('먼저 상단의 BAN 슬롯(1, 2, 3) 중 하나를 클릭해 선택해주세요.');
+            save(currentSlotKey, koName);
+            updateSlotUI(currentSlotKey, koName);
+        }
+
+        function confirmClear() {
+            if (!currentSlotKey) return alert('초기화할 슬롯을 먼저 선택해주세요.');
+            if (confirm("해당 슬롯의 브롤러 선택을 취소하시겠습니까?")) {
+                localStorage.removeItem(currentSlotKey);
+                document.getElementById('slot-' + currentSlotKey).innerHTML = currentSlotKey.slice(-1);
+            }
+        }
+
+        function updateSlotUI(key, koName) {
+            const el = document.getElementById('slot-' + key);
+            if (koName && nameMap[koName]) {
+                el.innerHTML = `<img src="images/${nameMap[koName]}_portrait.png">`;
+            } else {
+                el.innerHTML = key.slice(-1);
+            }
+        }
+
+        function toggleSet(id) {
+            const current = localStorage.getItem(id) === 'true';
+            save(id, !current);
+            updateSetButtons();
+        }
+
+        function updateSetButtons() {
+            ['b-set1', 'b-set2', 'r-set1', 'r-set2'].forEach(id => {
+                const isWin = localStorage.getItem(id) === 'true';
+                const btn = document.getElementById('btn-' + id);
+                if (id.startsWith('b')) btn.className = isWin ? 'active-win' : '';
+                else btn.className = isWin ? 'active-win-red' : '';
+            });
+        }
+
+        function save(key, val) { localStorage.setItem(key, val); }
+
+        window.onload = () => {
+            initPicker();
+            ['b-name', 'r-name', 'b-score', 'r-score'].forEach(k => {
+                const val = localStorage.getItem(k);
+                if (val) {
+                    const input = document.getElementById(k + '-in');
+                    if (input) input.value = val;
+                }
+            });
+            ['b-ban1', 'b-ban2', 'b-ban3', 'r-ban1', 'r-ban2', 'r-ban3'].forEach(k => {
+                const val = localStorage.getItem(k);
+                if (val) updateSlotUI(k, val);
+            });
+            updateSetButtons();
+        };
+
+        function copyOBSLink() {
+            const linkInput = document.getElementById('obs-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('주소가 복사되었습니다! OBS 브라우저 소스에 붙여넣으세요.');
+        }
+
+        // 페이지 로드 시 현재 경로를 분석해 오버레이 주소 생성
+        window.addEventListener('load', () => {
+            const currentUrl = window.location.href;
+            // admin.html 부분을 overlay.html로 변경 (파일명이 다르다면 수정하세요)
+            const overlayUrl = currentUrl.replace('admin.html', 'overlay.html');
+            document.getElementById('obs-link').value = overlayUrl;
+        });
+    </script>
+</body>
+
+</html>
